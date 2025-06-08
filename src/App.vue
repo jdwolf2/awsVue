@@ -35,12 +35,9 @@
           <img src="./assets/tableLogo.jpg" alt="AccuSalt Logo" class="logo" />
         </div>
       </div>
-      <div id="table-container">
+
+      <!-- <div id="table-container">
         <div id="table-div">
-          <!-- <button @click="scrollLeft">Scroll Left</button>
-          <button @click="scrollRight">Scroll Right</button>
-          <button @click="scrollTop">Scroll Top</button>
-          <button @click="scrollBottom">Scroll Bottom</button> -->
           <EjsGrid
             ref="gridRef"
             id="gridcomp"
@@ -83,7 +80,7 @@
             </EColumns>
           </EjsGrid>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -113,60 +110,6 @@ const scrollSettings = {
 }
 
 // Method to scroll horizontally to the right
-const scrollRight = () => {
-  if (gridRef.value) {
-    const content = gridRef.value.getContent().firstElementChild
-    if (content) {
-      const currentScrollLeft = content.scrollLeft
-      const newScrollLeft = currentScrollLeft + 500 // Scroll 100px to the right
-      content.scrollTo({
-        left: newScrollLeft,
-        behavior: 'smooth', // Optional: smooth scrolling
-      })
-    }
-  }
-}
-
-// Method to scroll horizontally to the left
-const scrollLeft = () => {
-  if (gridRef.value) {
-    const content = gridRef.value.getContent().firstElementChild
-    if (content) {
-      const currentScrollLeft = content.scrollLeft
-      const newScrollLeft = currentScrollLeft - 500 // Scroll 100px to the left
-      content.scrollTo({
-        left: newScrollLeft,
-        behavior: 'smooth', // Optional: smooth scrolling
-      })
-    }
-  }
-}
-
-// Method to scroll vertically to the top
-const scrollTop = () => {
-  if (gridRef.value) {
-    const content = gridRef.value.getContent().firstElementChild
-    if (content) {
-      content.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      })
-    }
-  }
-}
-
-// Method to scroll vertically to the bottom
-const scrollBottom = () => {
-  if (gridRef.value) {
-    const content = gridRef.value.getContent().firstElementChild
-    if (content) {
-      content.scrollTo({
-        top: content.scrollHeight,
-        behavior: 'smooth',
-      })
-    }
-  }
-}
 
 const groupOptions = { showGroupedColumn: true }
 const filterSettings = { type: 'CheckBox' }
@@ -194,12 +137,12 @@ const autoFitAllColumns = () => {
   }
 }
 
-onMounted(() => {
-  // Call autoFitAllColumns after the grid has been rendered
-  autoFitAllColumns()
-})
+// onMounted(() => {
+//   // Call autoFitAllColumns after the grid has been rendered
+//   autoFitAllColumns()
+// })
 
-watch(selectedColumns, updateColumns)
+// watch(selectedColumns, updateColumns)
 
 const onHeaderCellInfo = (args) => {
   const columnField = args.cell.column.field

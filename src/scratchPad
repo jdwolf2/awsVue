@@ -1,0 +1,56 @@
+// Method to scroll horizontally to the right
+
+const scrollRight = () => {
+  if (gridRef.value) {
+    const content = gridRef.value.getContent().firstElementChild
+    if (content) {
+      const currentScrollLeft = content.scrollLeft
+      const newScrollLeft = currentScrollLeft + 500 // Scroll 100px to the right
+      content.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth', // Optional: smooth scrolling
+      })
+    }
+  }
+}
+
+// Method to scroll horizontally to the left
+const scrollLeft = () => {
+  if (gridRef.value) {
+    const content = gridRef.value.getContent().firstElementChild
+    if (content) {
+      const currentScrollLeft = content.scrollLeft
+      const newScrollLeft = currentScrollLeft - 500 // Scroll 100px to the left
+      content.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth', // Optional: smooth scrolling
+      })
+    }
+  }
+}
+
+// Method to scroll vertically to the top
+const scrollTop = () => {
+  if (gridRef.value) {
+    const content = gridRef.value.getContent().firstElementChild
+    if (content) {
+      content.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      })
+    }
+  }
+}
+
+// Method to scroll vertically to the bottom
+const scrollBottom = () => {
+  if (gridRef.value) {
+    const content = gridRef.value.getContent().firstElementChild
+    if (content) {
+      content.scrollTo({
+        top: content.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+  }
+}
