@@ -1,23 +1,33 @@
 // App.vue
 <template>
-  <div class="p-4 space-y-4">
-    <!-- Single button to trigger child picker -->
-    <button
-      @click="openDatePicker"
-      class="px-4 py-2 bg-blue-600 text-white rounded"
-    >
-      Select Date
-    </button>
+  <div class="total-container">
+    <div class="page-container">
+      <div class="block-container">
+        <div class="logo">
+          <img src="./assets/tableLogo.jpg" alt="AccuSalt Logo" class="logo" />
+        </div>
 
-    <!-- Syncfusion DateRangePicker child component -->
-    <SyncfusionDateRangePicker
-      ref="picker"
-      @update:startDate="startDate = $event"
-      @update:stopDate="stopDate = $event"
-    />
+        <div class="p-4 space-y-4">
+          <!-- Single button to trigger child picker -->
+          <button
+            @click="openDatePicker"
+            class="px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            Select Date
+          </button>
 
-    <div><strong>startDate:</strong> {{ startDate ?? '—' }}</div>
-    <div><strong>stopDate:</strong> {{ stopDate ?? '—' }}</div>
+          <!-- Syncfusion DateRangePicker child component -->
+          <SyncfusionDateRangePicker
+            ref="picker"
+            @update:startDate="startDate = $event"
+            @update:stopDate="stopDate = $event"
+          />
+
+          <div><strong>startDate:</strong> {{ startDate ?? '—' }}</div>
+          <div><strong>stopDate:</strong> {{ stopDate ?? '—' }}</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
