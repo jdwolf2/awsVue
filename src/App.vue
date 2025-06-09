@@ -1,421 +1,67 @@
 <template>
-  <div class="total-container">
-    <div class="page-container">
-      <div class="block-container">
-        <div class="dateRangePicker">
-          <ejs-daterangepicker
-            v-model="selectedDateRange"
-            format="MMM d, yyyy"
-            separator=" to "
-            :allowEdit="false"
-            :openOnFocus="false"
-            placeholder="Select a Date Range"
-            :showClearButton="true"
-            :value="value"
-            :autoFit="true"
-            :responsive="true"
-            :fullScreenMode="false"
-          ></ejs-daterangepicker>
-        </div>
-        <!-- <div>
-          <EjsTimepicker>
-            <ejs-timepicker
-              v-model="selectedTime"
-              placeholder="Select a Time"
-              :format="format"
-              :step="step"
-              :strictMode="strictMode"
-              :value="value"
-              :width="width"
-            ></ejs-timepicker>
-          </EjsTimepicker>
-        </div> -->
+  <div class="p-4 space-y-4">
+    <!-- Hidden native inputs -->
+    <input type="date" ref="startRef" @change="onStartChange" class="hidden" />
+    <button
+      @click="openPicker(startRef)"
+      class="px-4 py-2 bg-blue-600 text-white rounded"
+    >
+      Select Start Date
+    </button>
+    <div><strong>startDate:</strong> {{ startDate ?? '—' }}</div>
 
-        <div class="logo">
-          <img src="./assets/tableLogo.jpg" alt="AccuSalt Logo" class="logo" />
-        </div>
-      </div>
-
-      <!-- <div id="table-container">
-        <div id="table-div">
-          <EjsGrid
-            ref="gridRef"
-            id="gridcomp"
-            :dataSource="data"
-            :allowScrolling="true"
-            :rowHeight="40"
-            :enableAltRow="true"
-            :allowReordering="true"
-            :allowExcelExport="true"
-            :columnQueryMode="'ExcludeHidden'"
-            :allowPdfExport="true"
-            :showColumnChooser="true"
-            :enableScrolling="true"
-            :scrollSettings="scrollSettings"
-            :allowPaging="false"
-            :allowGrouping="true"
-            :allowSorting="true"
-            :showColumnMenu="true"
-            :groupSettings="groupOptions"
-            :allowFiltering="true"
-            :filterSettings="filterSettings"
-            :allowTextWrap="true"
-            :autoFit="true"
-            :padding-right="0"
-            :width="'auto'"
-            :height="'400px'"
-            :frozenRows="0"
-            :frozenColumns="1"
-            @headerCellInfo="onHeaderCellInfo"
-          >
-            <EColumns>
-              <EColumn
-                v-for="col in displayedColumns"
-                :key="col.field"
-                :field="col.field"
-                :headerText="col.headerText"
-                :textAlign="col.textAlign"
-                :width="col.width"
-              />
-            </EColumns>
-          </EjsGrid>
-        </div>
-      </div> -->
-    </div>
+    <input type="date" ref="stopRef" @change="onStopChange" class="hidden" />
+    <button
+      @click="openPicker(stopRef)"
+      class="px-4 py-2 bg-green-600 text-white rounded"
+    >
+      Select Stop Date
+    </button>
+    <div><strong>stopDate:</strong> {{ stopDate ?? '—' }}</div>
   </div>
 </template>
 
 <script setup>
-/* eslint-disable */
+import './style.css'
+import { ref, watch } from 'vue'
 
-import { ref, onMounted, watch, provide, scrollmodule } from 'vue'
-import { data } from './assets/data.js'
-import { columns } from './assets/columns.js'
-import Multiselect from 'vue-multiselect'
-import {
-  GridComponent as EjsGrid,
-  ColumnDirective as EColumn,
-  ColumnsDirective as EColumns,
-  Group,
-  Sort,
-  Resize,
-  ColumnMenu,
-  Filter,
-  scrollModule,
-} from '@syncfusion/ej2-vue-grids'
+// Define emits for date changes
+const emit = defineEmits<{
+  (e: 'update:startDate', value: number | null): void
+  (e: 'update:stopDate', value: number | null): void
+}>()
 
-const scrollSettings = {
-  width: '100%',
-  height: '100%',
-}
+// Refs for hidden inputs
+const startRef = ref<HTMLInputElement | null>(null)
+const stopRef = ref<HTMLInputElement | null>(null)
 
-// Method to scroll horizontally to the right
+// Reactive UNIX timestamp state
+const startDate = ref<number | null>(null)
+const stopDate = ref<number | null>(null)
 
-const groupOptions = { showGroupedColumn: true }
-const filterSettings = { type: 'CheckBox' }
-provide('grid', [Group, Sort, Resize, ColumnMenu, Filter])
-
-import { DateRangePickerComponent as EjsDaterangepicker } from '@syncfusion/ej2-vue-calendars'
-
-import { TimePickerComponent as EjsTimepicker } from '@syncfusion/ej2-vue-calendars'
-
-const selectedColumns = ref(columns.map((col) => col.field))
-const displayedColumns = ref(columns)
-const gridRef = ref(null) // Add a reference to the Grid component
-
-const updateColumns = () => {
-  displayedColumns.value = columns.filter((col) =>
-    selectedColumns.value.includes(col.field)
-  )
-  gridRef.value.autoFitColumns()
-}
-
-// Automatically fit columns after the grid has been rendered
-const autoFitAllColumns = () => {
-  if (gridRef.value) {
-    gridRef.value.autoFitColumns()
+// Open native date picker
+function openPicker(elementRef: typeof startRef) {
+  const el = elementRef.value
+  if (!el) return
+  if (typeof (el as any).showPicker === 'function') {
+    ;(el as any).showPicker()
+  } else {
+    el.focus()
+    el.click()
   }
 }
 
-// onMounted(() => {
-//   // Call autoFitAllColumns after the grid has been rendered
-//   autoFitAllColumns()
-// })
-
-// watch(selectedColumns, updateColumns)
-
-const onHeaderCellInfo = (args) => {
-  const columnField = args.cell.column.field
-
-  const width = args.cell.column.width
-  const headerCell = args.node
-
-  // headerCell.style.width = width
-  headerCell.style.padding = '0 25px 0 10px'
-  headerCell.style.borderColor = 'lightlightgray'
-  headerCell.style.borderRight = '1px solid White'
-  switch (columnField) {
-    case 'Site':
-      headerCell.style.background = 'black'
-      break
-    case 'Truck':
-      headerCell.showColumnMenu = 'false'
-
-      headerCell.style.background = 'black'
-      break
-    case 'Route':
-      headerCell.style.background = 'black'
-      break
-    case 'StartDate':
-      headerCell.style.background = 'rgb(0,0, 150)'
-      break
-    case 'StartTime':
-      headerCell.style.background = 'rgb(0,0, 150)'
-      break
-    case 'StopTime':
-      headerCell.style.background = 'rgb(0,0, 150)'
-      break
-    case 'Duration':
-      headerCell.style.background = 'rgb(0,0, 150)'
-      break
-    case 'Total':
-      headerCell.style.background = 'darkgreen'
-      break
-    case 'Rate':
-      headerCell.style.background = 'darkgreen'
-      break
-    case 'Lat':
-      headerCell.style.background = 'rgb(100,0, 0)'
-      break
-    case 'Lon':
-      headerCell.style.background = 'rgb(100,0, 0)'
-      break
-    case 'Temp':
-      headerCell.style.background = 'lightblue'
-      break
-  }
+// Convert ISO date to UNIX timestamp
+function onStartChange(event: Event) {
+  const iso = (event.target as HTMLInputElement).value
+  startDate.value = iso ? Math.floor(new Date(iso).getTime() / 1000) : null
 }
+function onStopChange(event: Event) {
+  const iso = (event.target as HTMLInputElement).value
+  stopDate.value = iso ? Math.floor(new Date(iso).getTime() / 1000) : null
+}
+
+// Emit updates
+watch(startDate, (val) => emit('update:startDate', val))
+watch(stopDate, (val) => emit('update:stopDate', val))
 </script>
-
-<style>
-@import '~@syncfusion/ej2-base/styles/material.css';
-@import '~@syncfusion/ej2-buttons/styles/material.css';
-@import '~@syncfusion/ej2-calendars/styles/material.css';
-@import '~@syncfusion/ej2-dropdowns/styles/material.css';
-@import '~@syncfusion/ej2-inputs/styles/material.css';
-@import '~@syncfusion/ej2-navigations/styles/material.css';
-@import '~@syncfusion/ej2-popups/styles/material.css';
-@import '~@syncfusion/ej2-splitbuttons/styles/material.css';
-
-body {
-  background-color: rgb(80, 80, 80);
-}
-
-button {
-  margin: 10px;
-}
-
-.e-grid td.e-selectionbackground {
-  background-color: #00b7ea;
-}
-
-/* .table-container {
-  height: 30%;
-  margin-top: auto;
-  margin-bottom: auto;
-} */
-.page-container {
-  display: block;
-  height: 100vh; /* Full viewport height */
-  width: min-content; /* Full viewport width */
-  margin: auto;
-  overflow: auto;
-}
-
-/* #table-container {
-  overflow: auto;
-}
-#table-div {
-  overflow: auto;
-} */
-
-.e-grid {
-  overflow: auto;
-}
-
-.egrid .e-gridcontent {
-  overflow-y: auto;
-  overflow-x: auto;
-}
-
-.e-grid .e-gridheader {
-  overflow: auto;
-}
-
-.block-container {
-  display: flex;
-  /* flex-grow: 1 1 auto; */
-  align-items: center;
-  /* display: block; */
-  /* background-color: black; */
-  background-color: white;
-  margin-top: 2%;
-  height: max-content;
-}
-
-@media (max-width: 800px) {
-  .e-gridheader,
-  .e-gridcontent {
-    overflow: auto;
-  }
-}
-
-/* @media (max-width: 800px) {
-  .e-daterangepicker.e-popup {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    margin-right: auto;
-    margin-bottom: auto;
-  } */
-
-.custom-filter-popup {
-  max-height: 800px;
-  z-index: 2147483647;
-  width: 255px;
-  top: -69.2533px;
-  display: block;
-  visibility: visible;
-  position: absolute; /* Ensure it can float */
-  left: 0px; /* Align to the left */
-}
-
-.e-gridheader {
-  padding-right: 0 !important;
-}
-
-.total-container {
-  display: flex;
-}
-
-.logo {
-  /* display: inline-block; */
-  width: auto;
-  height: 40px;
-  /* margin-bottom: 10px; */
-
-  margin-left: auto;
-  padding-right: 10px;
-  /* margin-bottom: 15px; */
-  /* margin: 0 auto -20px 10px; */
-
-  /* background-color: white; */
-}
-/* .logo-divider {
-  width: 100%;
-  height: 5px;
-  border-bottom: 1px solid black;
-} */
-.dateRangePicker {
-  display: inline-block;
-  width: 300px;
-  height: 40px;
-  background-color: white;
-  /* background-color: lightgreen; */
-  font-family: Arial, Helvetica, sans-serif;
-  padding-left: 25px;
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-right: 20px;
-  /* margin-left: 25px; */
-}
-.e-popup {
-  /* transform: translate(192px, 5px); */
-  height: fit-content;
-}
-
-.e-hide {
-  display: none;
-}
-.e-grid .e-gridheader {
-  border: 1px solid white;
-}
-
-.e-grid .e-headercell {
-  color: black;
-  background-color: lightsteelblue;
-}
-
-.e-grid .e-headercelldiv {
-  font-size: 16px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: normal;
-  color: white;
-  overflow: hidden;
-}
-
-.e-grid .e-columnselection {
-  background-color: #aec2ec;
-}
-
-.e-input-group input.e-input,
-.e-input-group.e-control-wrapper input.e-input {
-  font-size: 16px;
-}
-
-.e-input-group .e-input-group-icon:last-child,
-.e-input-group.e-control-wrapper .e-input-group-icon:last-child {
-  font-size: 12px;
-  margin-right: 0;
-  background-color: white;
-}
-
-.e-calendar .e-content td:hover span.e-day,
-.e-calendar .e-content td:focus span.e-day,
-.e-bigger.e-small .e-calendar .e-content td:hover span.e-day,
-.e-bigger.e-small .e-calendar .e-content td:focus span.e-day {
-  background-color: red;
-  border: 2px solid;
-  padding-right: 0;
-  margin-right: 0;
-  color: #212529;
-}
-
-.e-calendar .e-header .e-title,
-.e-bigger.e-small .e-calendar .e-header .e-title {
-  font-size: 16px;
-}
-
-.e-calendar .e-header span,
-.e-bigger.e-small .e-calendar .e-header span {
-  border: 1px solid;
-  color: chocolate;
-}
-
-/* .e-calendar .e-content thead {
-  background: black;
-} */
-
-.e-grid
-  .e-gridheader
-  .e-icons:not(.e-icon-hide):not(.e-check):not(.e-stop):not(
-    .e-icon-reorderuparrow
-  ):not(.e-icon-reorderdownarrow) {
-  color: white;
-}
-
-.e-grid
-  th.e-headercell[aria-sort='ascending']:not(.e-columnselection)
-  .e-headertext,
-.e-grid
-  th.e-headercell[aria-sort='descending']:not(.e-columnselection)
-  .e-headertext,
-.e-grid th.e-headercell[aria-sort='ascending'] .e-sortfilterdiv,
-.e-grid th.e-headercell[aria-sort='descending'] .e-sortfilterdiv {
-  color: white;
-}
-
-@import '~@syncfusion/ej2-vue-grids/styles/material-lite.css';
-</style>
