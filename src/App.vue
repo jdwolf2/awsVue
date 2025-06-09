@@ -1,12 +1,11 @@
 <template>
   <div class="p-4 space-y-4">
     <!-- trigger button -->
-    <button
-      @click="openDatePicker"
-      class="px-4 py-2 bg-blue-600 text-white rounded"
-    >
-      Select Date
-    </button>
+    <button @click="openDatePicker" class="select-date">Select Date</button>
+
+    <div class="logo">
+      <img src="./assets/tableLogo.jpg" alt="AccuSalt Logo" class="logo" />
+    </div>
 
     <!-- Syncfusion picker -->
     <SyncfusionDateRangePicker

@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import './style.css' // <-- pulls in your no-input rule *globally*
+import './style.css'
+import './style2.css'
 
 import { registerLicense } from '@syncfusion/ej2-base'
 registerLicense(
