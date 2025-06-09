@@ -1,9 +1,11 @@
+// SyncfusionDateRangePicker.vue
 <template>
+  <!-- Hidden input wrapper with calendar icon via CSS class -->
   <EjsDaterangepicker
     ref="drp"
     :placeholder="waterMark"
     @change="handleChange"
-    class="w-full"
+    cssClass="no-input"
   />
 </template>
 
@@ -39,5 +41,3 @@ export default {
   },
 }
 </script>
-
-<style src="./style.css"></style>

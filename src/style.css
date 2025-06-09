@@ -16,6 +16,14 @@ button {
   margin: 10px;
 }
 
+.no-input .e-date-range-wrapper {
+  display: none !important;
+}
+
+.e-date-range-wrapper.no-input {
+  display: none !important;
+}
+
 .e-grid td.e-selectionbackground {
   background-color: #00b7ea;
 }
