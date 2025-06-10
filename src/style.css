@@ -252,7 +252,8 @@ button {
 .date-input {
   display: inline-block; /* make width honor our rules */
   background-color: white;
-  width: 150px;
+  width: 220px;
+  padding-left: 10px;
   /* height: 40px; */
   color: #000;
   font-family: Arial, Helvetica, sans-serif;

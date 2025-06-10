@@ -6,16 +6,11 @@
       <input
         type="text"
         class="date-input"
-        :value="formattedStartDate"
+        :value="formattedStartDate + '  to  ' + formattedStopDate"
         readonly
+        title="use the Select Date button"
       />
-      <span class="date-separator">to</span>
-      <input
-        type="text"
-        class="date-input"
-        :value="formattedStopDate"
-        readonly
-      />
+
       <!-- Syncfusion picker -->
       <SyncfusionDateRangePicker
         ref="picker"
