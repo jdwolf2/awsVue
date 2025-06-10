@@ -3,7 +3,7 @@
   <!-- Hidden input wrapper with calendar icon via CSS class -->
   <EjsDaterangepicker
     ref="drp"
-    :placeholder="waterMark"
+    :watermark="waterMark"
     v-model="selectedDateRange"
     format="MMM d, yyyy"
     separator=" to "

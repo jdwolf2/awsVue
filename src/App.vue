@@ -1,8 +1,21 @@
 <template>
-  <div class="date-dog">
+  <div class="date-">
     <div class="top-line">
       <button @click="openDatePicker" class="select-date">Select Date</button>
 
+      <input
+        type="text"
+        class="date-input"
+        :value="formattedStartDate"
+        readonly
+      />
+      <span class="date-separator">to</span>
+      <input
+        type="text"
+        class="date-input"
+        :value="formattedStopDate"
+        readonly
+      />
       <!-- Syncfusion picker -->
       <SyncfusionDateRangePicker
         ref="picker"
