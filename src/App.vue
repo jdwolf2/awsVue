@@ -1,15 +1,38 @@
 <template>
   <div class="date-">
     <div class="top-line">
-      <button @click="openDatePicker" class="select-date">Select Date</button>
+      <button @click="openDatePicker" class="select-date">
+        {{ dateButtonText }}
+      </button>
 
-      <input
-        type="text"
-        class="date-input"
-        :value="formattedStartDate + '  to  ' + formattedStopDate"
-        readonly
-        title="use the Select Date button"
-      />
+      <div style="display: inline-block; position: relative">
+        <input
+          type="text"
+          class="date-input"
+          :value="dateRangeDisplay"
+          readonly
+          @mouseenter="showTooltip = true"
+          @mouseleave="hideTooltip"
+        />
+        <div
+          v-if="showTooltip"
+          class="custom-tooltip"
+          style="
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #333;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            white-space: nowrap;
+            z-index: 10;
+            font-size: 0.9rem;
+          "
+        >
+          use the {{ dateButtonText }} button
+        </div>
+      </div>
 
       <!-- Syncfusion picker -->
       <SyncfusionDateRangePicker
@@ -51,4 +74,32 @@ function formatUnix(unix) {
 
 const formattedStartDate = computed(() => formatUnix(startDate.value))
 const formattedStopDate = computed(() => formatUnix(stopDate.value))
+
+// --- New computed for combined date range display
+const dateRangeDisplay = computed(() =>
+  startDate.value && stopDate.value
+    ? `${formattedStartDate.value}  to  ${formattedStopDate.value}`
+    : ''
+)
+
+// --- Computed for dynamic button text
+const dateButtonText = computed(() =>
+  startDate.value && stopDate.value ? 'Change Date' : 'Select Date'
+)
+
+// --- Tooltip logic
+const showTooltip = ref(false)
+let tooltipTimeout = null
+
+function hideTooltip() {
+  tooltipTimeout = setTimeout(() => {
+    showTooltip.value = false
+  }, 150) // Tooltip hides quickly; adjust ms if you want it faster/slower
+}
+
+// Optional: clear timeout if mouse re-enters quickly
+function onMouseEnter() {
+  if (tooltipTimeout) clearTimeout(tooltipTimeout)
+  showTooltip.value = true
+}
 </script>

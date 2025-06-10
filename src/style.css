@@ -211,7 +211,7 @@ button {
 @import '~@syncfusion/ej2-vue-grids/styles/material-lite.css';
 .top-line {
   display: flex;
-  width: 50%;
+  width: 40%;
   /* background-color: white; */
   /* flex-direction: row; */
   /* justify-content: space-between; */
