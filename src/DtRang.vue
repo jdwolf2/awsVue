@@ -4,9 +4,19 @@
   <EjsDaterangepicker
     ref="drp"
     :placeholder="waterMark"
+    v-model="selectedDateRange"
+    format="MMM d, yyyy"
+    separator=" to "
+    :allowEdit="false"
+    :openOnFocus="false"
+    :showClearButton="false"
+    :value="value"
+    :autoFit="true"
+    :responsive="true"
+    :fullScreenMode="false"
     @change="handleChange"
     cssClass="no-input"
-  />
+  ></EjsDaterangepicker>
 </template>
 
 <script>
