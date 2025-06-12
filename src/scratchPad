@@ -1,0 +1,148 @@
+// Method to scroll horizontally to the right
+
+const scrollRight = () => {
+  if (gridRef.value) {
+    const content = gridRef.value.getContent().firstElementChild
+    if (content) {
+      const currentScrollLeft = content.scrollLeft
+      const newScrollLeft = currentScrollLeft + 500 // Scroll 100px to the right
+      content.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth', // Optional: smooth scrolling
+      })
+    }
+  }
+}
+
+// Method to scroll horizontally to the left
+const scrollLeft = () => {
+  if (gridRef.value) {
+    const content = gridRef.value.getContent().firstElementChild
+    if (content) {
+      const currentScrollLeft = content.scrollLeft
+      const newScrollLeft = currentScrollLeft - 500 // Scroll 100px to the left
+      content.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth', // Optional: smooth scrolling
+      })
+    }
+  }
+}
+
+// Method to scroll vertically to the top
+const scrollTop = () => {
+  if (gridRef.value) {
+    const content = gridRef.value.getContent().firstElementChild
+    if (content) {
+      content.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      })
+    }
+  }
+}
+
+// Method to scroll vertically to the bottom
+const scrollBottom = () => {
+  if (gridRef.value) {
+    const content = gridRef.value.getContent().firstElementChild
+    if (content) {
+      content.scrollTo({
+        top: content.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+  }
+}
+
+
+<div>
+<EjsTimepicker>
+  <ejs-timepicker
+    v-model="selectedTime"
+    placeholder="Select a Time"
+    :format="format"
+    :step="step"
+    :strictMode="strictMode"
+    :value="value"
+    :width="width"
+  ></ejs-timepicker>
+</EjsTimepicker>
+</div> 
+
+
+
+<div class="block-container">
+<div class="dateRangePicker">
+  <ejs-daterangepicker
+    v-model="selectedDateRange"
+    format="MMM d, yyyy"
+    separator=" to "
+    :allowEdit="false"
+    :openOnFocus="false"
+    placeholder="Select a Date Range"
+    :showClearButton="true"
+    :value="value"
+    :autoFit="true"
+    :responsive="true"
+    :fullScreenMode="false"
+  ></ejs-daterangepicker>
+</div>
+
+
+<div class="logo">
+  <img src="./assets/tableLogo.jpg" alt="AccuSalt Logo" class="logo" />
+</div>
+</div>
+
+<div id="table-div">
+  <EjsGrid
+    ref="gridRef"
+    id="gridcomp"
+    :dataSource="data"
+    :allowScrolling="true"
+    :rowHeight="40"
+    :enableAltRow="true"
+    :allowReordering="true"
+    :allowExcelExport="true"
+    :columnQueryMode="'ExcludeHidden'"
+    :allowPdfExport="true"
+    :showColumnChooser="true"
+    :enableScrolling="true"
+    :scrollSettings="scrollSettings"
+    :allowPaging="false"
+    :allowGrouping="true"
+    :allowSorting="true"
+    :showColumnMenu="true"
+    :groupSettings="groupOptions"
+    :allowFiltering="true"
+    :filterSettings="filterSettings"
+    :allowTextWrap="true"
+    :autoFit="true"
+    :padding-right="0"
+    :width="'auto'"
+    :height="'400px'"
+    :frozenRows="0"
+    :frozenColumns="1"
+    @headerCellInfo="onHeaderCellInfo"
+  >
+    <EColumns>
+      <EColumn
+        v-for="col in displayedColumns"
+        :key="col.field"
+        :field="col.field"
+        :headerText="col.headerText"
+        :textAlign="col.textAlign"
+        :width="col.width"
+      />
+    </EColumns>
+  </EjsGrid>
+</div>
+
+
+<div class="logo">
+<img src="./assets/tableLogo.jpg" alt="AccuSalt Logo" class="logo" />
+</div>
+</div>
+
+

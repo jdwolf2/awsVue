@@ -1,366 +1,203 @@
 <template>
-  <div class="total-container">
-    <div class="page-container">
-      <div class="block-container">
-        <div class="dateRangePicker">
-          <ejs-daterangepicker
-            v-model="selectedDateRange"
-            format="MMM d, yyyy"
-            separator=" to "
-            :allowEdit="false"
-            :openOnFocus="false"
-            placeholder="Select a Date Range"
-            :showClearButton="true"
-            :value="value"
-            :autoFit="true"
-            :responsive="true"
-            :fullScreenMode="false"
-          ></ejs-daterangepicker>
+  <div class="app-container">
+    <div class="top-line">
+      <!-- Left controls: Select Date and input -->
+      <div class="left-controls">
+        <button @click="handleSelectDate" class="select-date">
+          {{ dateButtonText }}
+        </button>
+        <div style="display: inline-block; position: relative">
+          <input
+            type="text"
+            class="date-input"
+            :value="isAuthenticated ? dateRangeDisplay : ''"
+            :placeholder="!isAuthenticated ? 'Sign in to select dates' : ''"
+            readonly
+            :disabled="!isAuthenticated"
+            @mouseenter="onMouseEnter"
+            @mouseleave="hideTooltip"
+          />
+          <div v-if="showTooltip && isAuthenticated" class="custom-tooltip">
+            use the {{ dateButtonText }} button
+          </div>
         </div>
-        <!-- <div>
-          <EjsTimepicker>
-            <ejs-timepicker
-              v-model="selectedTime"
-              placeholder="Select a Time"
-              :format="format"
-              :step="step"
-              :strictMode="strictMode"
-              :value="value"
-              :width="width"
-            ></ejs-timepicker>
-          </EjsTimepicker>
-        </div> -->
+        <SyncfusionDateRangePicker
+          ref="picker"
+          :startDate="startDate"
+          :stopDate="stopDate"
+          @update:startDate="onStartDateUpdate"
+          @update:stopDate="onStopDateUpdate"
+        />
+      </div>
 
+      <!-- Right controls: logo and sign in/out -->
+      <div class="right-controls">
         <div class="logo">
           <img src="./assets/tableLogo.jpg" alt="AccuSalt Logo" class="logo" />
         </div>
-      </div>
-      <div id="table-container">
-        <div id="table-div">
-          <!-- <button @click="scrollLeft">Scroll Left</button>
-          <button @click="scrollRight">Scroll Right</button>
-          <button @click="scrollTop">Scroll Top</button>
-          <button @click="scrollBottom">Scroll Bottom</button> -->
-          <EjsGrid
-            ref="gridRef"
-            id="gridcomp"
-            :dataSource="data"
-            :allowScrolling="true"
-            :rowHeight="40"
-            :enableAltRow="true"
-            :allowReordering="true"
-            :allowExcelExport="true"
-            :columnQueryMode="'ExcludeHidden'"
-            :allowPdfExport="true"
-            :showColumnChooser="true"
-            :enableScrolling="true"
-            :scrollSettings="scrollSettings"
-            :allowPaging="false"
-            :allowGrouping="true"
-            :allowSorting="true"
-            :showColumnMenu="true"
-            :groupSettings="groupOptions"
-            :allowFiltering="true"
-            :filterSettings="filterSettings"
-            :allowTextWrap="true"
-            :autoFit="true"
-            :padding-right="0"
-            :width="'auto'"
-            :height="'400px'"
-            :frozenRows="0"
-            :frozenColumns="1"
-            @headerCellInfo="onHeaderCellInfo"
-          >
-            <EColumns>
-              <EColumn
-                v-for="col in displayedColumns"
-                :key="col.field"
-                :field="col.field"
-                :headerText="col.headerText"
-                :textAlign="col.textAlign"
-                :width="col.width"
-              />
-            </EColumns>
-          </EjsGrid>
-        </div>
+        <button
+          class="select-date"
+          v-if="!isAuthenticated"
+          @click="onSignInClick"
+        >
+          Sign in
+        </button>
+        <button
+          class="select-date"
+          v-if="isAuthenticated"
+          @click="onSignOutClick"
+        >
+          Sign out
+        </button>
       </div>
     </div>
+    <!-- ... rest of the template ... -->
   </div>
 </template>
 
 <script setup>
 /* eslint-disable */
+import { ref, computed, onMounted, watch } from 'vue'
+import SyncfusionDateRangePicker from './DtRang.vue'
+import { useAuth } from './useAuth.js'
+import { useDynamoDB } from './useDynamoDB.js'
 
-import { ref, onMounted, watch, provide, scrollmodule } from 'vue'
-import { data } from './assets/data.js'
-import { columns } from './assets/columns.js'
-import Multiselect from 'vue-multiselect'
-import {
-  GridComponent as EjsGrid,
-  ColumnDirective as EColumn,
-  ColumnsDirective as EColumns,
-  Group,
-  Sort,
-  Resize,
-  ColumnMenu,
-  Filter,
-  scrollModule,
-} from '@syncfusion/ej2-vue-grids'
-
-const scrollSettings = {
-  width: '100%',
-  height: '100%',
+// ---- Default dates: JUL/01/2020 - NOV/23/2020 ----
+function getUnix(month, day, year) {
+  return Math.floor(new Date(year, month - 1, day).getTime() / 1000)
 }
+const defaultStartUnix = getUnix(7, 1, 2020) // July is 7
+const defaultStopUnix = getUnix(11, 23, 2020) // November is 11
 
-// Method to scroll horizontally to the right
-const scrollRight = () => {
-  if (gridRef.value) {
-    const content = gridRef.value.getContent().firstElementChild
-    if (content) {
-      const currentScrollLeft = content.scrollLeft
-      const newScrollLeft = currentScrollLeft + 500 // Scroll 100px to the right
-      content.scrollTo({
-        left: newScrollLeft,
-        behavior: 'smooth', // Optional: smooth scrolling
-      })
-    }
-  }
-}
+const startDate = ref(defaultStartUnix)
+const stopDate = ref(defaultStopUnix)
 
-// Method to scroll horizontally to the left
-const scrollLeft = () => {
-  if (gridRef.value) {
-    const content = gridRef.value.getContent().firstElementChild
-    if (content) {
-      const currentScrollLeft = content.scrollLeft
-      const newScrollLeft = currentScrollLeft - 500 // Scroll 100px to the left
-      content.scrollTo({
-        left: newScrollLeft,
-        behavior: 'smooth', // Optional: smooth scrolling
-      })
-    }
-  }
-}
-
-// Method to scroll vertically to the top
-const scrollTop = () => {
-  if (gridRef.value) {
-    const content = gridRef.value.getContent().firstElementChild
-    if (content) {
-      content.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      })
-    }
-  }
-}
-
-// Method to scroll vertically to the bottom
-const scrollBottom = () => {
-  if (gridRef.value) {
-    const content = gridRef.value.getContent().firstElementChild
-    if (content) {
-      content.scrollTo({
-        top: content.scrollHeight,
-        behavior: 'smooth',
-      })
-    }
-  }
-}
-
-const groupOptions = { showGroupedColumn: true }
-const filterSettings = { type: 'CheckBox' }
-provide('grid', [Group, Sort, Resize, ColumnMenu, Filter])
-
-import { DateRangePickerComponent as EjsDaterangepicker } from '@syncfusion/ej2-vue-calendars'
-
-import { TimePickerComponent as EjsTimepicker } from '@syncfusion/ej2-vue-calendars'
-
-const selectedColumns = ref(columns.map((col) => col.field))
-const displayedColumns = ref(columns)
-const gridRef = ref(null) // Add a reference to the Grid component
-
-const updateColumns = () => {
-  displayedColumns.value = columns.filter((col) =>
-    selectedColumns.value.includes(col.field)
-  )
-  gridRef.value.autoFitColumns()
-}
-
-// Automatically fit columns after the grid has been rendered
-const autoFitAllColumns = () => {
-  if (gridRef.value) {
-    gridRef.value.autoFitColumns()
-  }
-}
-
+// ---- Auth state & logic ----
+const { user, signIn, signOut, checkAuth } = useAuth()
+const isAuthenticated = computed(() => !!user.value)
 onMounted(() => {
-  // Call autoFitAllColumns after the grid has been rendered
-  autoFitAllColumns()
+  if (typeof checkAuth === 'function') checkAuth()
 })
 
-watch(selectedColumns, updateColumns)
-
-const onHeaderCellInfo = (args) => {
-  const columnField = args.cell.column.field
-
-  const width = args.cell.column.width
-  const headerCell = args.node
-
-  // headerCell.style.width = width
-  headerCell.style.padding = '0 25px 0 10px'
-  headerCell.style.borderColor = 'lightlightgray'
-  headerCell.style.borderRight = '1px solid White'
-  switch (columnField) {
-    case 'Site':
-      headerCell.style.background = 'black'
-      break
-    case 'Truck':
-      headerCell.showColumnMenu = 'false'
-
-      headerCell.style.background = 'black'
-      break
-    case 'Route':
-      headerCell.style.background = 'black'
-      break
-    case 'StartDate':
-      headerCell.style.background = 'rgb(0,0, 150)'
-      break
-    case 'StartTime':
-      headerCell.style.background = 'rgb(0,0, 150)'
-      break
-    case 'StopTime':
-      headerCell.style.background = 'rgb(0,0, 150)'
-      break
-    case 'Duration':
-      headerCell.style.background = 'rgb(0,0, 150)'
-      break
-    case 'Total':
-      headerCell.style.background = 'darkgreen'
-      break
-    case 'Rate':
-      headerCell.style.background = 'darkgreen'
-      break
-    case 'Lat':
-      headerCell.style.background = 'rgb(100,0, 0)'
-      break
-    case 'Lon':
-      headerCell.style.background = 'rgb(100,0, 0)'
-      break
-    case 'Temp':
-      headerCell.style.background = 'lightblue'
-      break
-  }
+function onSignInClick() {
+  if (typeof signIn === 'function') signIn()
+  else console.error('signIn is not a function')
 }
+function onSignOutClick() {
+  if (typeof signOut === 'function') signOut()
+  else console.error('signOut is not a function')
+}
+
+// ---- Date picker state & logic ----
+const picker = ref(null)
+function openDatePicker() {
+  if (picker.value && picker.value.openPicker) picker.value.openPicker()
+}
+function handleSelectDate() {
+  if (!isAuthenticated.value) {
+    alert('Please sign in to select dates.')
+    return
+  }
+  openDatePicker()
+}
+function formatUnix(unix) {
+  if (unix == null) return '—'
+  const d = new Date(unix * 1000)
+  const m = d.toLocaleString('en-US', { month: 'short' })
+  return `${m} ${d.getDate()} ${d.getFullYear()}`
+}
+const formattedStartDate = computed(() => formatUnix(startDate.value))
+const formattedStopDate = computed(() => formatUnix(stopDate.value))
+const dateRangeDisplay = computed(() =>
+  startDate.value && stopDate.value
+    ? `${formattedStartDate.value}  to  ${formattedStopDate.value}`
+    : ''
+)
+const dateButtonText = computed(() =>
+  startDate.value && stopDate.value ? 'Change Date' : 'Select Date'
+)
+
+// Tooltip logic
+const showTooltip = ref(false)
+let tooltipTimeout = null
+function hideTooltip() {
+  tooltipTimeout = setTimeout(() => {
+    showTooltip.value = false
+  }, 150)
+}
+function onMouseEnter() {
+  if (tooltipTimeout) clearTimeout(tooltipTimeout)
+  showTooltip.value = true
+}
+
+// Date picker emits
+
+// function onStartDateUpdate(val) {
+//   startDate.value = val
+// }
+// function onStopDateUpdate(val) {
+//   stopDate.value = val
+// }
+
+// ---- DynamoDB query integration ----
+const { items, fetchError, itemsFetched, fetchItems } = useDynamoDB()
+// Table headers (dynamic, update as needed)
+const tableHeaders = computed(() =>
+  items.value.length > 0 ? Object.keys(items.value[0]) : []
+)
+// Auto-fetch when dates or auth change
+watch([startDate, stopDate, isAuthenticated], async ([start, stop, authed]) => {
+  if (authed && start && stop) {
+    await fetchItems(start.toString(), stop.toString())
+  }
+})
 </script>
 
 <style>
-@import '~@syncfusion/ej2-base/styles/material.css';
-@import '~@syncfusion/ej2-buttons/styles/material.css';
-@import '~@syncfusion/ej2-calendars/styles/material.css';
-@import '~@syncfusion/ej2-dropdowns/styles/material.css';
-@import '~@syncfusion/ej2-inputs/styles/material.css';
-@import '~@syncfusion/ej2-navigations/styles/material.css';
-@import '~@syncfusion/ej2-popups/styles/material.css';
-@import '~@syncfusion/ej2-splitbuttons/styles/material.css';
-
-body {
-  background-color: rgb(80, 80, 80);
-}
-
-button {
-  margin: 10px;
-}
-
-.e-grid td.e-selectionbackground {
-  background-color: #00b7ea;
-}
-
-/* .table-container {
-  height: 30%;
-  margin-top: auto;
-  margin-bottom: auto;
-} */
-.page-container {
-  display: block;
-  height: 100vh; /* Full viewport height */
-  width: min-content; /* Full viewport width */
-  margin: auto;
-  overflow: auto;
-}
-
-/* #table-container {
-  overflow: auto;
-}
-#table-div {
-  overflow: auto;
-} */
-
-.e-grid {
-  overflow: auto;
-}
-
-.egrid .e-gridcontent {
-  overflow-y: auto;
-  overflow-x: auto;
-}
-
-.e-grid .e-gridheader {
-  overflow: auto;
-}
-
-.block-container {
+.app-container {
   display: flex;
-  /* flex-grow: 1 1 auto; */
-  align-items: center;
-  /* display: block; */
-  /* background-color: black; */
+  width: 80%;
+  /* margin: 0 auto; */
+  /* padding: 20px; */
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.select-date {
+  /* margin: 0 8px; */
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 0;
+  padding-bottom: 0;
+  height: 40px;
+  font-size: 16px;
+  /* border-radius: 5px; */
+  border: none;
   background-color: white;
-  margin-top: 2%;
-  height: max-content;
+  color: black;
+  cursor: pointer;
+  /* transition: background 0.2s; */
 }
-
-@media (max-width: 800px) {
-  .e-gridheader,
-  .e-gridcontent {
-    overflow: auto;
-  }
+.select-date:hover {
+  background: #125da4;
 }
-
-/* @media (max-width: 800px) {
-  .e-daterangepicker.e-popup {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    margin-right: auto;
-    margin-bottom: auto;
-  } */
-
-.custom-filter-popup {
-  max-height: 800px;
-  z-index: 2147483647;
-  width: 255px;
-  top: -69.2533px;
-  display: block;
-  visibility: visible;
-  position: absolute; /* Ensure it can float */
-  left: 0px; /* Align to the left */
+.date-input {
+  margin-left: auto;
+  padding: 7px 12px;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #bdbdbd;
+  background: #f5f5f5;
+  width: 220px;
 }
-
-.e-gridheader {
-  padding-right: 0 !important;
+.date-input:disabled {
+  background: #eee;
+  color: #bbb;
 }
-
-.total-container {
-  display: flex;
-}
-
 .logo {
   /* display: inline-block; */
   width: auto;
-  height: 40px;
+  height: 22px;
   /* margin-bottom: 10px; */
 
   margin-left: auto;
@@ -370,109 +207,44 @@ button {
 
   /* background-color: white; */
 }
-/* .logo-divider {
+.custom-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #333;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 10;
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+.results-table {
+  margin-top: 1.2em;
+  border-collapse: collapse;
   width: 100%;
-  height: 5px;
-  border-bottom: 1px solid black;
-} */
-.dateRangePicker {
-  display: inline-block;
-  width: 300px;
-  height: 40px;
-  background-color: white;
-  /* background-color: lightgreen; */
-  font-family: Arial, Helvetica, sans-serif;
-  padding-left: 25px;
-  margin-top: 0;
-  margin-bottom: 0;
-  padding-right: 20px;
-  /* margin-left: 25px; */
 }
-.e-popup {
-  /* transform: translate(192px, 5px); */
-  height: fit-content;
+.results-table th,
+.results-table td {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  font-size: 1rem;
 }
-
-.e-hide {
-  display: none;
+.results-table th {
+  background: #f5f5f5;
+  font-weight: bold;
 }
-.e-grid .e-gridheader {
-  border: 1px solid white;
+.no-data-msg {
+  margin-top: 1em;
+  color: #d32f2f;
+  background: #fff4f4;
+  border: 1px solid #ffcdd2;
+  padding: 12px 18px;
+  border-radius: 7px;
+  font-size: 1.12rem;
+  text-align: left;
+  letter-spacing: 0.01em;
 }
-
-.e-grid .e-headercell {
-  color: black;
-  background-color: lightsteelblue;
-}
-
-.e-grid .e-headercelldiv {
-  font-size: 16px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: normal;
-  color: white;
-  overflow: hidden;
-}
-
-.e-grid .e-columnselection {
-  background-color: #aec2ec;
-}
-
-.e-input-group input.e-input,
-.e-input-group.e-control-wrapper input.e-input {
-  font-size: 16px;
-}
-
-.e-input-group .e-input-group-icon:last-child,
-.e-input-group.e-control-wrapper .e-input-group-icon:last-child {
-  font-size: 12px;
-  margin-right: 0;
-  background-color: white;
-}
-
-.e-calendar .e-content td:hover span.e-day,
-.e-calendar .e-content td:focus span.e-day,
-.e-bigger.e-small .e-calendar .e-content td:hover span.e-day,
-.e-bigger.e-small .e-calendar .e-content td:focus span.e-day {
-  background-color: red;
-  border: 2px solid;
-  padding-right: 0;
-  margin-right: 0;
-  color: #212529;
-}
-
-.e-calendar .e-header .e-title,
-.e-bigger.e-small .e-calendar .e-header .e-title {
-  font-size: 16px;
-}
-
-.e-calendar .e-header span,
-.e-bigger.e-small .e-calendar .e-header span {
-  border: 1px solid;
-  color: chocolate;
-}
-
-/* .e-calendar .e-content thead {
-  background: black;
-} */
-
-.e-grid
-  .e-gridheader
-  .e-icons:not(.e-icon-hide):not(.e-check):not(.e-stop):not(
-    .e-icon-reorderuparrow
-  ):not(.e-icon-reorderdownarrow) {
-  color: white;
-}
-
-.e-grid
-  th.e-headercell[aria-sort='ascending']:not(.e-columnselection)
-  .e-headertext,
-.e-grid
-  th.e-headercell[aria-sort='descending']:not(.e-columnselection)
-  .e-headertext,
-.e-grid th.e-headercell[aria-sort='ascending'] .e-sortfilterdiv,
-.e-grid th.e-headercell[aria-sort='descending'] .e-sortfilterdiv {
-  color: white;
-}
-
-@import '~@syncfusion/ej2-vue-grids/styles/material-lite.css';
+@import './style.css';
 </style>
