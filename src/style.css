@@ -212,7 +212,7 @@ button {
 
 .top-line {
   display: flex;
-  width: 60%; /* background-color: white; */
+  width: 80%; /* background-color: white; */
   /* flex-direction: row; */
   /* justify-content: space-between; */
   gap: 0;
@@ -222,19 +222,30 @@ button {
 .select-date {
   /* gap: 0.5rem; */
   background-color: white;
-  height: 25px;
+  height: 40px;
+  margin: 0;
   color: #000;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 16px;
   /* padding: 5px; */
 }
+
+.right-controls {
+  margin-left: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  /* background-color: lightblue; */
+}
+
 .logo {
   /* display: inline-block; */
   width: auto;
   height: 22px;
   /* margin-bottom: 10px; */
 
-  margin-left: auto;
   padding-right: 10px;
   /* margin-bottom: 15px; */
   /* margin: 0 auto -20px 10px; */
